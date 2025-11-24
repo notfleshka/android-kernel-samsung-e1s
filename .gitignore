@@ -9,3 +9,8 @@ susfs4ksu/
 # Building
 # build.sh  Ok, this could be needed for users.
 out/
+buildchain/
+tools/
+prebuilts/
+external/
+build/

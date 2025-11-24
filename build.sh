@@ -7,7 +7,7 @@
 # Based on dx4m buildscript
 # Modified by notfleshka
 
-CURRENT_DIR="$(KERNEL_DIR)"
+CURRENT_DIR="$(pwd)"
 KERNELBUILD="${CURRENT_DIR}"
 
 BUILDCHAIN="${KERNELBUILD}/buildchain"
@@ -16,17 +16,16 @@ PREBUILTS="${KERNELBUILD}/prebuilts"
 EXTERNAL="${KERNELBUILD}/external"
 BUILD="${KERNELBUILD}/build"
 
-KERNEL_DIR="${pwd}"
 OUTPUT_DIR="${CURRENT_DIR}/out"
 
 MENUCONFIG=false
 PRINTHELP=false
-CLEAN=false
+CLEAN=true
 CONFIG=false
-SETVERSION=""
-LOCALVERSION=""
-BUILDUSER=""
-BUILDHOST=""
+SETVERSION="6.1.138-sukisu"
+LOCALVERSION="6.1.138-sukisu"
+BUILDUSER="notfleshka"
+BUILDHOST="notfleshka"
 
 VERSION="-android14-11"
 TARGETSOC="s5e9945"
@@ -139,7 +138,7 @@ fi
 
 if [ "$CONFIG" = true ]; then
 	make -j"$(nproc)" \
-     -C "${KERNEL_DIR}" \
+     -C "${CURRENT_DIR}" \
      O="${OUTPUT_DIR}" \
      ${ARGS} \
      "${TARGET_DEFCONFIG}"
@@ -148,14 +147,14 @@ fi
 
 if [ "$MENUCONFIG" = true ]; then
 	make -j"$(nproc)" \
-     -C "${KERNEL_DIR}" \
+     -C "${CURRENT_DIR}" \
      O="${OUTPUT_DIR}" \
      ${ARGS} \
 	"${TARGET_DEFCONFIG}" HOSTCFLAGS="${CFLAGS}" HOSTLDFLAGS="${LDFLAGS}" menuconfig
 	exit 1
 else
 	make -j"$(nproc)" \
-     -C "${KERNEL_DIR}" \
+     -C "${CURRENT_DIR}" \
      O="${OUTPUT_DIR}" \
      ${ARGS} \
      EXTRA_CFLAGS:=" -DCFG80211_SINGLE_NETDEV_MULTI_LINK_SUPPORT -DTARGET_SOC=${TARGETSOC}" \
@@ -168,7 +167,7 @@ if [[ ! -f "${CONFIG_FILE}" ]]; then
 fi
 
 
-LOCALVERSION=$("${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" --state CONFIG_LOCALVERSION)
+LOCALVERSION=$("${CURRENT_DIR}/scripts/config" --file "${CONFIG_FILE}" --state CONFIG_LOCALVERSION)
 
 if [ -z "$LOCALVERSION" ]; then
 	LOCALVERSION="${VERSION}"
@@ -181,22 +180,22 @@ fi
 echo "LOCALVERSION: $LOCALVERSION"
 
 # Change LOCALVERSION
-"${KERNEL_DIR}/scripts/config" --file "${CONFIG_FILE}" \
+"${CURRENT_DIR}/scripts/config" --file "${CONFIG_FILE}" \
   --set-str CONFIG_LOCALVERSION "$LOCALVERSION" -d CONFIG_LOCALVERSION_AUTO
   
 # Fix Kernel Version to remove +
-sed -i 's/echo "+"$/echo ""/' $KERNEL_DIR/scripts/setlocalversion
+sed -i 's/echo "+"$/echo ""/' $CURRENT_DIR/scripts/setlocalversion
 
 # Compile
 KBUILD_BUILD_USER="${BUILDUSER}" KBUILD_BUILD_HOST="${BUILDHOST}" make -j"$(nproc)" \
-     -C "${KERNEL_DIR}" \
+     -C "${CURRENT_DIR}" \
      O="${OUTPUT_DIR}" \
      ${ARGS} \
-     EXTRA_CFLAGS:=" -I$KERNEL_DIR/drivers/ufs/host/s5e9945/ -I$KERNEL_DIR/arch/arm64/kvm/hyp/include -DCFG80211_SINGLE_NETDEV_MULTI_LINK_SUPPORT -DTARGET_SOC=${TARGETSOC}"
+     EXTRA_CFLAGS:=" -I$CURRENT_DIR/drivers/ufs/host/s5e9945/ -I$CURRENT_DIR/arch/arm64/kvm/hyp/include -DCFG80211_SINGLE_NETDEV_MULTI_LINK_SUPPORT -DTARGET_SOC=${TARGETSOC}"
 
 
 # Restore fix from earlier
-sed -i 's/echo ""$/echo "+"/' $KERNEL_DIR/scripts/setlocalversion
+sed -i 's/echo ""$/echo "+"/' $CURRENT_DIR/scripts/setlocalversion
 
 if [ -e $OUTPUT_DIR/arch/arm64/boot/Image ]; then
 	echo "[✅] Kernel build finished."
