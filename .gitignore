@@ -5,3 +5,7 @@ susfs4ksu/
 # Useless files from patches
 *.rej
 *.orig
+
+# Building
+# build.sh  Ok, this could be needed for users.
+out/

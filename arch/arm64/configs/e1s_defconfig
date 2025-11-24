@@ -8,6 +8,7 @@
 CONFIG_KSU=y
 CONFIG_KSU_SUSFS=y
 CONFIG_KPM=y
+CONFIG_KSU_KPROBES_HOOK=y
 # RKP. Samsung, we never needed it.
 CONFIG_UH=n
 CONFIG_UH_RKP=n
